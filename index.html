@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#151714">
   <meta name="description" content="Пульт RICOSHET: CS, захват точки и поиск кодов через Bluetooth LE.">
   <title>RICOSHET — пульт игры</title>
-  <link rel="icon" href="./logo.ico?v=20261105-ui" type="image/x-icon">
-  <link rel="apple-touch-icon" href="./logo.png?v=20261105-ui">
-  <link rel="stylesheet" href="./styles.css?v=20261105-ui">
-  <script type="module" src="./app.mjs?v=20261105-fix1"></script>
+  <link rel="icon" href="./logo.ico?v=20261105-round2" type="image/x-icon">
+  <link rel="apple-touch-icon" href="./logo.png?v=20261105-round2">
+  <link rel="stylesheet" href="./styles.css?v=20261105-round2">
+  <script type="module" src="./app.mjs?v=20261105-round2"></script>
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -27,7 +27,7 @@
 
   <div class="app-shell">
     <header class="topbar">
-      <a href="./" class="brand" aria-label="RICOSHET — главная"><img class="brand-logo" src="./logo.png?v=20261105-ui" width="48" height="48" alt=""><span>RICOSHET<small>FIELD CONTROL</small></span></a>
+      <a href="./" class="brand" aria-label="RICOSHET — главная"><img class="brand-logo" src="./logo.png?v=20261105-round2" width="48" height="48" alt=""><span>RICOSHET<small>FIELD CONTROL</small></span></a>
       <div class="top-meta"><span class="web-label">WEB / BLE</span><span class="connection-pill" id="connection-pill"><i></i><span>Нет связи</span></span></div>
     </header>
 
@@ -78,7 +78,8 @@
     <footer><span>RICOSHET <span class="footer-divider">/</span> FIELD CONTROL</span><span>WEB v1.0 <span class="footer-divider">·</span> BLE UART</span></footer>
   </div>
 
-  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form" novalidate><div class="dialog-header"><div><p class="eyebrow" id="settings-mode">НАСТРОЙКИ CS</p><h2 id="settings-title">Параметры игры</h2></div><button type="button" id="close-settings" class="icon-button" aria-label="Закрыть настройки"><svg><use href="#i-cross"/></svg></button></div><div class="dialog-content"><div id="draft-notice" class="draft-notice" hidden><span>Восстановлен несохранённый черновик.</span><button type="button" class="text-button" id="reload-draft">Взять с устройства</button></div><fieldset id="settings-fields"><div id="settings-inputs" class="form-grid"></div><div id="code-editor" hidden><label class="switch-row"><span>Повторное использование кодов</span><input type="checkbox" id="reuse-codes" role="switch"><span class="switch-track"></span></label><div class="editor-title"><h3>Список кодов</h3><span id="code-count">0 / 32</span></div><p class="subnote">Код: 3–7 цифр. Стоимость: 1–9999 баллов.</p><div id="code-entries"></div><button type="button" id="add-code" class="button secondary full">+ Добавить код</button></div></fieldset><p id="form-error" class="form-error" role="alert" hidden></p></div><div class="dialog-footer"><span id="save-progress"></span><button type="submit" id="save-settings" class="button light full">Сохранить настройки <svg><use href="#i-arrow"/></svg></button></div></form></dialog>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form" novalidate><div class="dialog-header"><div><p class="eyebrow" id="settings-mode">НАСТРОЙКИ CS</p><h2 id="settings-title">Параметры игры</h2></div><button type="button" id="close-settings" class="icon-button" aria-label="Закрыть настройки"><svg><use href="#i-cross"/></svg></button></div><div class="dialog-content"><div id="draft-notice" class="draft-notice" hidden><span>Восстановлен несохранённый черновик.</span><button type="button" class="text-button" id="reload-draft">Взять с устройства</button></div><fieldset id="settings-fields"><div id="settings-inputs" class="form-grid"></div><div id="cs-start-armed-row" hidden><label class="switch-row"><span>Старт с установленной бомбой</span><input type="checkbox" id="cs-start-armed" role="switch"><span class="switch-track"></span></label><p id="cs-start-armed-help" class="subnote" hidden>Для этой настройки необходимо обновить прошивку.</p></div><div id="code-editor" hidden><label class="switch-row"><span>Повторное использование кодов</span><input type="checkbox" id="reuse-codes" role="switch"><span class="switch-track"></span></label><div class="editor-title"><h3>Список кодов</h3><span id="code-count">0 / 32</span></div><p class="subnote">Код: 3–7 цифр. Стоимость: 1–9999 баллов.</p><div id="code-entries"></div><button type="button" id="add-code" class="button secondary full">+ Добавить код</button></div></fieldset><p id="form-error" class="form-error" role="alert" hidden></p></div><div class="dialog-footer"><span id="save-progress"></span><button type="submit" id="save-settings" class="button light full">Сохранить настройки <svg><use href="#i-arrow"/></svg></button></div></form></dialog>
   <noscript><p class="noscript">Для работы пульта необходимо включить JavaScript в браузере.</p></noscript>
 </body>
 </html>
+

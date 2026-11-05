@@ -11,7 +11,7 @@ export const BASE_KEYS = ['MODE','BUSY','STATE','ROUND','FUSE','DEFUSE','KIT','V
   'DOMROUND','TEAMS','CAPTURE','NEUTRAL','DOMOWNER','DOMACTOR','DOMPROGRESS','DOMCONTESTED',
   'WINNERS','REMAIN','STARTIN','SCORE1_MS','SCORE2_MS','SCORE3_MS','SCORE4_MS'];
 export const SEARCH_KEYS = ['FINDCOUNT','FINDTEAMS','FINDROUND','FINDUSED','POINTS1','POINTS2','POINTS3','POINTS4'];
-const KNOWN = new Set([...BASE_KEYS, ...SEARCH_KEYS, 'FINDREUSE']);
+const KNOWN = new Set([...BASE_KEYS, ...SEARCH_KEYS, 'FINDREUSE', 'CSARMED']);
 
 export function integer(value, low, high, label) {
   const text = String(value ?? '');
@@ -44,6 +44,7 @@ export function validateSnapshot(values) {
     SCORE1_MS: [0,4294967295], SCORE2_MS: [0,4294967295], SCORE3_MS: [0,4294967295], SCORE4_MS: [0,4294967295],
   };
   for (const [k, [lo, hi]] of Object.entries(ranges)) v[k] = integer(v[k], lo, hi, k);
+  if ('CSARMED' in v) v.CSARMED = integer(v.CSARMED, 0, 1, 'CSARMED');
   v.codes = [];
   if (v.MODE === 'CODES') {
     const absent = SEARCH_KEYS.filter(k => !(k in v));
@@ -113,7 +114,7 @@ export function searchCommands(draft) {
 export function settingsDraft(mode, s) {
   const duration = mode === 'CS' ? s.ROUND : mode === 'DOM' ? s.DOMROUND : s.FINDROUND;
   const common = { minutes: String(Math.max(1, Math.floor((duration ?? 600) / 60))) };
-  if (mode === 'CS') return { ...common, FUSE: String(s.FUSE), DEFUSE: String(s.DEFUSE), KIT: String(s.KIT), CODE: s.CODE, CODETIME: String(s.CODETIME) };
+  if (mode === 'CS') return { ...common, FUSE: String(s.FUSE), DEFUSE: String(s.DEFUSE), KIT: String(s.KIT), CODE: s.CODE, CODETIME: String(s.CODETIME), armed: Boolean(s.CSARMED) };
   if (mode === 'DOM') return { ...common, teams: String(s.TEAMS), CAPTURE: String(s.CAPTURE), NEUTRAL: String(s.NEUTRAL) };
   return { ...common, teams: String(s.FINDTEAMS ?? 2), reuse: Boolean(s.FINDREUSE), codes: (s.codes ?? []).map(c => ({ code: c.code, points: String(c.points) })) };
 }
@@ -125,6 +126,8 @@ export function settingsCommands(mode, draft, s) {
     for (const [key, lo, hi, label] of [['FUSE',5,3600,'Взрыватель, с'], ['DEFUSE',1,300,'Обезвреживание, с'], ['KIT',1,300,'С набором, с'], ['CODETIME',1,30,'Ввод кода, с']]) values[key] = integer(draft[key], lo, hi, label);
     if (!/^[0-9]{1,8}$/.test(draft.CODE)) throw new Error('Код CS: от 1 до 8 цифр');
     values.CODE = draft.CODE;
+    if (s.CSARMED != null) values.CSARMED = draft.armed ? 1 : 0;
+    else if (draft.armed) throw new Error('Для старта с установленной бомбой необходимо обновить прошивку.');
   } else if (mode === 'DOM') {
     values.TEAMS = integer(draft.teams, 2, 4, 'Число команд');
     values.CAPTURE = integer(draft.CAPTURE, 1, 300, 'Захват, с');
@@ -133,7 +136,7 @@ export function settingsCommands(mode, draft, s) {
   return Object.entries(values).filter(([k, v]) => v !== s[k]).map(([k,v]) => `${k} ${v}`);
 }
 
-export function durationOf(s) { return s.MODE === 'CS' ? s.ROUND : s.MODE === 'DOM' ? s.DOMROUND : s.FINDROUND; }
+export function durationOf(s) { return s.MODE === 'CS' ? (s.CSARMED ? s.FUSE : s.ROUND) : s.MODE === 'DOM' ? s.DOMROUND : s.FINDROUND; }
 export function verifySettings(mode, draft, snapshot) {
   if (snapshot.MODE !== mode) throw new Error('Устройство вернуло другой режим игры.');
   let equal;
@@ -158,3 +161,4 @@ export function humanError(error) {
   if (error?.name === 'SecurityError' || error?.name === 'NotAllowedError') return 'Браузер не разрешил Bluetooth. Необходимо открыть панель в Bluefy и разрешить подключение.';
   return text;
 }
+

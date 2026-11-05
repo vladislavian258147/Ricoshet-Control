@@ -1,4 +1,4 @@
-import { durationOf, FINISHED } from './protocol.mjs?v=20261105-ui';
+import { durationOf, FINISHED } from './protocol.mjs?v=20261105-round2';
 
 // Абсолютные сроки сохраняют отсчёт при сворачивании вкладки и перезагрузке страницы.
 // Время оценивается на телефоне; STATE и результаты всегда поступают с устройства.
@@ -45,3 +45,4 @@ export class RoundClock {
     return { phase: now < v.start ? 'delay' : 'round', seconds: Math.max(0, Math.ceil(((now < v.start ? v.start : v.end) - now) / 1000)), confirmed: v.confirmed };
   }
 }
+

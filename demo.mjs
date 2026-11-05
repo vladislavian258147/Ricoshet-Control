@@ -1,9 +1,9 @@
-import { UUID } from './bluetooth.mjs?v=20261105-ui';
-import { BASE_KEYS, SEARCH_KEYS } from './protocol.mjs?v=20261105-ui';
+import { UUID } from './bluetooth.mjs?v=20261105-round2';
+import { BASE_KEYS, SEARCH_KEYS } from './protocol.mjs?v=20261105-round2';
 
 export function demoValues(mode = 'CS') {
   return { MODE:mode, BUSY:'0', STATE:'READY', ROUND:'300', FUSE:'40', DEFUSE:'10', KIT:'5', VOL:'20',
-    CODE:'7355608', CODETIME:'4', DOMROUND:'600', TEAMS:'4', CAPTURE:'10', NEUTRAL:'4',
+    CODE:'7355608', CODETIME:'4', CSARMED:'0', DOMROUND:'600', TEAMS:'4', CAPTURE:'10', NEUTRAL:'4',
     DOMOWNER:'0', DOMACTOR:'0', DOMPROGRESS:'0', DOMCONTESTED:'0', WINNERS:'0', REMAIN:'600', STARTIN:'0',
     SCORE1_MS:'0', SCORE2_MS:'0', SCORE3_MS:'0', SCORE4_MS:'0', FINDCOUNT:'3', FINDTEAMS:'4', FINDROUND:'600',
     FINDUSED:'0', FINDREUSE:'0', POINTS1:'0', POINTS2:'0', POINTS3:'0', POINTS4:'0',
@@ -11,6 +11,7 @@ export function demoValues(mode = 'CS') {
 }
 export function statusLines(v) {
   const keys = [...BASE_KEYS.slice(0,-1)];
+  if (v.CSARMED != null) keys.push('CSARMED');
   if (v.MODE === 'CODES') keys.push(...SEARCH_KEYS, 'FINDREUSE', ...Array.from({ length:Number(v.FINDCOUNT) }, (_,i) => `FINDCODE${i+1}`));
   keys.push('SCORE4_MS');
   return keys.map(k => `${k}=${v[k]}`).join('\r\n') + '\r\n';
@@ -51,6 +52,7 @@ export function createDemoBluetooth() {
     v.STARTIN = String(Math.max(0, Math.ceil((starts-now)/1000)));
     v.REMAIN = String(Math.max(0, Math.ceil((ends-Math.max(now,starts))/1000)));
     if (now < starts) return;
+    if (v.MODE === 'CS' && v.CSARMED === '1') { v.STATE = now >= ends ? 'EXPLODED' : 'ARMED'; return; }
     v.STATE = now >= ends ? ({ CS:'ROUND_OVER', DOM:'DOM_FINISHED', CODES:'FIND_FINISHED' })[v.MODE] : ({ CS:'READY', DOM:'DOM_ACTIVE', CODES:'FIND_ACTIVE' })[v.MODE];
     if (v.MODE === 'DOM') { v.DOMOWNER = '1'; v.SCORE1_MS = String(Math.min(ends-starts, now-starts)); if (now >= ends) v.WINNERS = '1'; }
     if (v.MODE === 'CODES' && now >= ends) v.WINNERS = String((1 << Number(v.FINDTEAMS))-1);
@@ -66,7 +68,7 @@ export function createDemoBluetooth() {
     else if (v.BUSY === '1' && name !== 'VOL') reply = 'ERR BUSY';
     else if (name === 'START') {
       if (v.MODE === 'CODES' && v.FINDCOUNT === '0') reply = 'ERR EMPTY';
-      else { starts = Date.now() + Number(args[0])*1000; ends = starts + Number(v.MODE === 'CS' ? v.ROUND : v.MODE === 'DOM' ? v.DOMROUND : v.FINDROUND)*1000; v.BUSY = '1'; update(); reply = 'ACK START'; }
+      else { starts = Date.now() + Number(args[0])*1000; ends = starts + Number(v.MODE === 'CS' ? (v.CSARMED === '1' ? v.FUSE : v.ROUND) : v.MODE === 'DOM' ? v.DOMROUND : v.FINDROUND)*1000; v.BUSY = '1'; update(); reply = 'ACK START'; }
     } else if (name === 'FINDCFG') staged = { count:Number(args[0]), teams:args[1], seconds:args[2], codes:[] };
     else if (name === 'FC') { if (!staged) reply = 'ERR CONFIG'; else staged.codes[Number(args[0])] = `${args[1]},${args[2]},0`; }
     else if (name === 'FINDCOMMIT') {
@@ -91,3 +93,4 @@ export function createDemoBluetooth() {
   };
   return { requestDevice: async () => device };
 }
+

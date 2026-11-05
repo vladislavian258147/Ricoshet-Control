@@ -1,7 +1,7 @@
-import { BluetoothClient } from './bluetooth.mjs?v=20261105-ui';
-import { RoundClock } from './clock.mjs?v=20261105-ui';
-import { createDemoBluetooth } from './demo.mjs?v=20261105-ui';
-import { MODES, TEAM_NAMES, STATE_NAMES, FINISHED, formatClock, settingsDraft, settingsCommands, verifySettings, integer, humanError, durationOf, validateSnapshot } from './protocol.mjs?v=20261105-ui';
+import { BluetoothClient } from './bluetooth.mjs?v=20261105-round2';
+import { RoundClock } from './clock.mjs?v=20261105-round2';
+import { createDemoBluetooth } from './demo.mjs?v=20261105-round2';
+import { MODES, TEAM_NAMES, STATE_NAMES, FINISHED, formatClock, settingsDraft, settingsCommands, verifySettings, integer, humanError, durationOf, validateSnapshot } from './protocol.mjs?v=20261105-round2';
 
 const $ = id => document.getElementById(id);
 const storage = {
@@ -78,14 +78,14 @@ function canConfigure() { return canControl() && !snapshot.BUSY && !startPending
 function viewSettings() { return selected === 'CODES' && snapshot?.MODE !== 'CODES' ? searchSnapshot : snapshot; }
 
 function renderControls() {
-  const connected = client.connected, pending = client.connecting || client.busy || saving || startPending;
+  const connected = client.connected, pending = client.connecting || saving || startPending;
   $('connect').hidden = connected;
   $('connect').disabled = client.connecting;
   $('connect').querySelector('span').textContent = client.connecting ? 'Подключение…' : 'Подключиться';
   $('disconnect').hidden = !connected && !client.connecting;
   $('demo').hidden = connected || client.connecting;
   $('demo-banner').hidden = !(isDemo && connected);
-  $('refresh').disabled = !connected || client.busy || saving;
+  $('refresh').disabled = !connected || saving;
   $('reset').disabled = !connected || !loaded || pending;
   $('select-mode').disabled = !connected || !loaded || pending;
   $('settings').disabled = !canConfigure() || pending;
@@ -94,12 +94,12 @@ function renderControls() {
   $('start').querySelector('span').textContent = startPending ? 'Отправка команды старта…' : canControl() && snapshot.BUSY ? (snapshot.STARTIN ? 'Старт запланирован' : FINISHED.has(snapshot.STATE) ? 'Раунд завершён' : 'Раунд идёт') : emptyCodes && canControl() ? 'Необходимо добавить коды' : 'Начать раунд';
   for (const id of ['start-delay','delay-minus','delay-plus']) $(id).disabled = !canConfigure() || pending;
   $('volume').disabled = !connected || !loaded || saving;
-  $('save-volume').disabled = !connected || !loaded || client.busy || saving || !volumeDirty;
+  $('save-volume').disabled = !connected || !loaded || saving || !volumeDirty;
   $('volume-value').textContent = loaded || volumeDirty ? $('volume').value : snapshot ? snapshot.VOL : '—';
   if ($('settings-dialog').open) {
     const editable = canConfigure() && draftMode === selected;
     $('settings-fields').disabled = !editable || saving;
-    $('save-settings').disabled = !editable || client.busy || saving;
+    $('save-settings').disabled = !editable || saving;
     $('close-settings').disabled = saving;
     $('reload-draft').disabled = saving || !editable;
     $('add-code').disabled = saving || !editable || (draft?.codes?.length ?? 0) >= 32;
@@ -124,7 +124,7 @@ function render() {
   const min = value => value == null ? '—' : `${Math.floor(value/60)} мин`;
   const sec = value => value == null ? '—' : `${value} с`;
   const rows = selected === 'CS'
-    ? [['Раунд', min(s?.ROUND)], ['Взрыватель', sec(s?.FUSE)], ['Обезвреживание', sec(s?.DEFUSE)], ['С набором', sec(s?.KIT)], ['Код', s?.CODE ?? '—',true], ['Ввод кода', sec(s?.CODETIME)]]
+    ? [['Старт с бомбой', s?.CSARMED == null ? '—' : s.CSARMED ? 'Включён' : 'Выключен'], ['Раунд', min(s?.ROUND)], ['Взрыватель', sec(s?.FUSE)], ['Обезвреживание', sec(s?.DEFUSE)], ['С набором', sec(s?.KIT)], ['Код', s?.CODE ?? '—',true], ['Ввод кода', sec(s?.CODETIME)]]
     : selected === 'DOM'
     ? [['Команд', s?.TEAMS ?? '—'], ['Раунд', min(s?.DOMROUND)], ['Захват', sec(s?.CAPTURE)], ['Нейтрализация', sec(s?.NEUTRAL)]]
     : [['Команд', s?.FINDTEAMS ?? '—'], ['Раунд', min(s?.FINDROUND)], ['Кодов', s?.FINDCOUNT ?? '—'], ['Повтор кодов', !s ? '—' : s.FINDREUSE ? 'Разрешён' : 'Запрещён']];
@@ -167,12 +167,13 @@ function renderTimer() {
   const s = snapshot, active = s?.MODE === selected;
   const local = clock.view(selected);
   const done = active && FINISHED.has(s.STATE);
-  let seconds = null, label = 'ТАЙМЕР РАУНДА', state = !loaded ? 'Ожидание связи' : active ? STATE_NAMES[s.STATE] : 'Другой режим', note = '';
+  const roundLabel = selected === 'CS' && s?.CSARMED ? 'ТАЙМЕР ВЗРЫВАТЕЛЯ' : 'ТАЙМЕР РАУНДА';
+  let seconds = null, label = roundLabel, state = !loaded ? 'Ожидание связи' : active ? STATE_NAMES[s.STATE] : 'Другой режим', note = '';
   let style = '';
   if (done) { seconds=0; note='Результат получен с устройства. Для нового раунда необходимо выполнить сброс.'; }
   else if (local && active) {
     seconds=local.seconds;
-    label=local.phase === 'delay' ? 'ДО НАЧАЛА РАУНДА' : 'ТАЙМЕР РАУНДА';
+    label=local.phase === 'delay' ? 'ДО НАЧАЛА РАУНДА' : roundLabel;
     style=local.phase === 'delay' ? 'delay' : 'running';
     state=local.phase === 'delay' ? 'Обратный отсчёт' : s.STATE === 'READY' ? 'Раунд идёт' : STATE_NAMES[s.STATE];
     note=!client.connected || !loaded ? 'Нет связи · локальный отсчёт телефона' : !local.confirmed ? 'Старт отправлен · ожидание подтверждения' : selected === 'CS' ? 'Локальный таймер' : 'Таймер с устройства';
@@ -181,7 +182,7 @@ function renderTimer() {
     note=selected === 'CS' ? 'Раунд уже идёт. Точное время старта неизвестно этому телефону.' : 'Последнее время, полученное с устройства.';
   } else {
     const settings=viewSettings();
-    seconds=settings ? (selected === 'CS' ? settings.ROUND : selected === 'DOM' ? settings.DOMROUND : settings.FINDROUND) : null;
+    seconds=settings ? (selected === 'CS' ? (settings.CSARMED ? settings.FUSE : settings.ROUND) : selected === 'DOM' ? settings.DOMROUND : settings.FINDROUND) : null;
     note=!snapshot ? 'Для получения параметров раунда необходимо подключить устройство.' : !active ? 'Необходимо выбрать этот режим на устройстве.' : !loaded ? 'Последние параметры · устройство не подключено' : 'Устройство готово к запуску.';
   }
   $('timer-value').textContent=seconds == null ? '--:--' : formatClock(seconds);
@@ -220,7 +221,7 @@ $('refresh').addEventListener('click', () => action(() => client.requestStatus()
 $('reset').addEventListener('click', () => action(() => client.batch(['RESET']), 'Раунд сброшен.'));
 $('select-mode').addEventListener('click', () => action(() => client.batch([`MODE ${selected}`]), `Режим «${MODES[selected]}» выбран.`));
 $('start').addEventListener('click', async () => {
-  if (!canConfigure() || client.busy) return;
+  if (!canConfigure()) return;
   let delay;
   try { delay=integer($('start-delay').value,0,3600,'Задержка старта, с'); }
   catch (error) { notify(error.message,'error'); return; }
@@ -269,6 +270,10 @@ function renderForm() {
   else html+=field('teams','Количество команд',draft.teams,'2–4 команды');
   if (draftMode === 'DOM') html+=field('CAPTURE','Захват, с',draft.CAPTURE,'1–300 секунд')+field('NEUTRAL','Нейтрализация, с',draft.NEUTRAL,'1–300 секунд');
   $('settings-inputs').innerHTML=html;
+  $('cs-start-armed-row').hidden=draftMode !== 'CS';
+  $('cs-start-armed').checked=Boolean(draft.armed);
+  $('cs-start-armed').disabled=snapshot?.CSARMED == null;
+  $('cs-start-armed-help').hidden=snapshot?.CSARMED != null;
   $('code-editor').hidden=draftMode !== 'CODES';
   if (draftMode === 'CODES') { $('reuse-codes').checked=draft.reuse; renderCodeEditor(); }
   $('form-error').hidden=true;
@@ -285,7 +290,7 @@ $('settings').addEventListener('click', () => {
   let restored=false;
   try {
     const cached=JSON.parse(storage.getItem(draftKey()) ?? 'null');
-    if (cached && typeof cached.minutes === 'string' && (draftMode !== 'CODES' || Array.isArray(cached.codes) && cached.codes.length<=32 && cached.codes.every(c => typeof c?.code === 'string' && typeof c?.points === 'string'))) { draft=cached; restored=true; }
+    if (cached && typeof cached.minutes === 'string' && (draftMode !== 'CODES' || Array.isArray(cached.codes) && cached.codes.length<=32 && cached.codes.every(c => typeof c?.code === 'string' && typeof c?.points === 'string'))) { draft={...draft,...cached}; restored=true; }
   } catch {}
   renderForm(); $('draft-notice').hidden=!restored;
   if (typeof $('settings-dialog').showModal === 'function') $('settings-dialog').showModal();
@@ -306,6 +311,7 @@ $('settings-form').addEventListener('input', event => {
   else draft[key]=value;
   persistDraft(); $('form-error').hidden=true;
 });
+$('cs-start-armed').addEventListener('change', () => { draft.armed=$('cs-start-armed').checked; persistDraft(); });
 $('reuse-codes').addEventListener('change', () => { draft.reuse=$('reuse-codes').checked; persistDraft(); });
 $('add-code').addEventListener('click', () => {
   if (draft.codes.length>=32) return;
@@ -318,7 +324,7 @@ $('code-entries').addEventListener('click', event => {
 });
 $('settings-form').addEventListener('submit', async event => {
   event.preventDefault();
-  if (!canConfigure() || saving || client.busy || draftMode !== selected) return;
+  if (!canConfigure() || saving || draftMode !== selected) return;
   let commands;
   try { commands=settingsCommands(draftMode,draft,snapshot); }
   catch (error) { $('form-error').textContent=error.message; $('form-error').hidden=false; return; }
@@ -355,7 +361,8 @@ async function poll() {
   if (!client.connected || client.busy || saving || startPending || document.visibilityState === 'hidden') return;
   try { await client.requestStatus(); } catch (error) { notify(humanError(error),'error'); }
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && client.connected) { loaded=false; render(); poll(); } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && client.connected) { poll(); } });
 setInterval(poll,3000);
 setInterval(renderTimer,250);
 render();
+

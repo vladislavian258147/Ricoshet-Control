@@ -1,4 +1,4 @@
-import { LineDecoder, StatusCollector } from './protocol.mjs?v=20261105-ui';
+import { LineDecoder, StatusCollector } from './protocol.mjs?v=20261105-round2';
 
 export const UUID = {
   service: '0000ffe0-0000-1000-8000-00805f9b34fb',
@@ -217,3 +217,4 @@ export class BluetoothClient {
     if (p.writeDone) this.finish(p, p.error, p.reply);
   }
 }
+
