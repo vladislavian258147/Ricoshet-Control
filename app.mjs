@@ -344,11 +344,12 @@ async function copy(text, success) {
     notify(success,'success');
   } catch { notify('Не удалось скопировать. Можно выделить текст вручную.', 'error'); }
 }
-$('copy-link').addEventListener('click', () => copy(location.origin+location.pathname,'Ссылка скопирована. На iPhone для подключения необходимо использовать Bluefy.'));
+$('copy-link')?.addEventListener('click', () => copy(location.origin+location.pathname,'Ссылка скопирована. На iPhone для подключения необходимо использовать Bluefy.'));
 $('copy-log').addEventListener('click', () => copy(logs.join('\n'),'Журнал скопирован.'));
 $('clear-log').addEventListener('click', () => { logs.length=0; renderLog(); });
 $('log-details').addEventListener('toggle', () => { if ($('log-details').open) renderLog(); });
-$('compatibility').hidden=!!navigator.bluetooth;
+const compatibilityBanner = $('compatibility');
+if (compatibilityBanner) compatibilityBanner.hidden=!!navigator.bluetooth;
 
 async function poll() {
   if (!client.connected || client.busy || saving || startPending || document.visibilityState === 'hidden') return;
