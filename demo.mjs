@@ -1,5 +1,5 @@
-import { UUID } from './bluetooth.mjs';
-import { BASE_KEYS, SEARCH_KEYS } from './protocol.mjs';
+import { UUID } from './bluetooth.mjs?v=20261105-ui';
+import { BASE_KEYS, SEARCH_KEYS } from './protocol.mjs?v=20261105-ui';
 
 export function demoValues(mode = 'CS') {
   return { MODE:mode, BUSY:'0', STATE:'READY', ROUND:'300', FUSE:'40', DEFUSE:'10', KIT:'5', VOL:'20',
@@ -16,7 +16,7 @@ export function statusLines(v) {
   return keys.map(k => `${k}=${v[k]}`).join('\r\n') + '\r\n';
 }
 
-/** Explicit, in-browser simulator using the same notifications and command queue. */
+/** Виртуальный BLE-модуль использует общий формат уведомлений и очередь команд. */
 export function createDemoBluetooth() {
   let v = demoValues(), staged = null, starts = null, ends = null, incoming = '';
   class Characteristic extends EventTarget {

@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#151714">
   <meta name="description" content="Пульт RICOSHET: CS, захват точки и поиск кодов через Bluetooth LE.">
   <title>RICOSHET — пульт игры</title>
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.mjs"></script>
+  <link rel="icon" href="./logo.ico?v=20261105-ui" type="image/x-icon">
+  <link rel="apple-touch-icon" href="./logo.png?v=20261105-ui">
+  <link rel="stylesheet" href="./styles.css?v=20261105-ui">
+  <script type="module" src="./app.mjs?v=20261105-ui"></script>
 </head>
 <body>
   <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -26,24 +27,24 @@
 
   <div class="app-shell">
     <header class="topbar">
-      <a href="./" class="brand" aria-label="RICOSHET — главная"><span class="brand-mark" aria-hidden="true">R<span>↗</span></span><span>RICOSHET<small>FIELD CONTROL</small></span></a>
+      <a href="./" class="brand" aria-label="RICOSHET — главная"><img class="brand-logo" src="./logo.png?v=20261105-ui" width="48" height="48" alt=""><span>RICOSHET<small>FIELD CONTROL</small></span></a>
       <div class="top-meta"><span class="web-label">WEB / BLE</span><span class="connection-pill" id="connection-pill"><i></i><span>Нет связи</span></span></div>
     </header>
 
-    <div class="page-heading"><div><p class="eyebrow">УПРАВЛЕНИЕ ПОЛИГОНОМ</p><h1>Пульт игры<span class="orange">.</span></h1></div><span class="edition">01 — WEB EDITION</span></div>
+    <div class="page-heading"><div><h1>Пульт игры<span class="orange">.</span></h1></div><span class="edition">01 — WEB EDITION</span></div>
 
     <section class="connection-card" aria-label="Подключение Bluetooth">
-      <div class="connection-main"><div class="connection-symbol"><svg><use href="#i-bt"/></svg></div><div><h2 id="device-name">Подключи устройство</h2><p id="connection-description">Выбери BLE-модуль и получи настройки игры.</p></div></div>
+      <div class="connection-main"><div class="connection-symbol"><svg><use href="#i-bt"/></svg></div><div><h2 id="device-name">Подключение устройства</h2><p id="connection-description">Для получения настроек необходимо подключить BLE-модуль.</p></div></div>
       <div class="connection-actions"><button id="connect" class="button light"><svg><use href="#i-bt"/></svg><span>Подключиться</span></button><button id="disconnect" class="button secondary" hidden>Отключить</button><button id="demo" class="text-button">Посмотреть демо <span aria-hidden="true">↗</span></button></div>
     </section>
-    <div id="compatibility" class="compatibility" hidden><span>На iPhone открой эту ссылку в <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank" rel="noopener">Bluefy</a>. В Safari подключение Bluetooth недоступно.</span><button class="text-button" id="copy-link">Скопировать ссылку</button></div>
+    <div id="compatibility" class="compatibility" hidden><span>На iPhone необходимо открыть эту ссылку в <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank" rel="noopener">Bluefy</a>. В Safari подключение Bluetooth недоступно.</span><button class="text-button" id="copy-link">Скопировать ссылку</button></div>
     <div id="demo-banner" class="demo-banner" hidden><strong>ДЕМО</strong><span>Виртуальное устройство · можно попробовать все настройки</span></div>
     <div id="notice" class="notice" role="status" hidden><span id="notice-text"></span><button id="notice-close" aria-label="Закрыть уведомление"><svg><use href="#i-cross"/></svg></button></div>
 
     <nav class="mode-tabs" aria-label="Режим игры" role="tablist">
-      <button role="tab" aria-selected="true" aria-controls="mode-panel" id="tab-CS" data-mode="CS"><span class="tab-number">01</span><span><strong>CS</strong><small>Установка и дефуз</small></span><span class="tab-indicator"></span></button>
-      <button role="tab" aria-selected="false" aria-controls="mode-panel" id="tab-DOM" data-mode="DOM" tabindex="-1"><span class="tab-number">02</span><span><strong>Захват точки</strong><small>Удержание и время</small></span><span class="tab-indicator"></span></button>
-      <button role="tab" aria-selected="false" aria-controls="mode-panel" id="tab-CODES" data-mode="CODES" tabindex="-1"><span class="tab-number">03</span><span><strong>Поиск кодов</strong><small>Командный поиск</small></span><span class="tab-indicator"></span></button>
+      <button role="tab" aria-selected="true" aria-controls="mode-panel" id="tab-CS" data-mode="CS"><span class="tab-number">01</span><span><strong>CS</strong></span><span class="tab-indicator"></span></button>
+      <button role="tab" aria-selected="false" aria-controls="mode-panel" id="tab-DOM" data-mode="DOM" tabindex="-1"><span class="tab-number">02</span><span><strong>Захват точки</strong></span><span class="tab-indicator"></span></button>
+      <button role="tab" aria-selected="false" aria-controls="mode-panel" id="tab-CODES" data-mode="CODES" tabindex="-1"><span class="tab-number">03</span><span><strong>Поиск кодов</strong></span><span class="tab-indicator"></span></button>
     </nav>
 
     <main id="mode-panel" role="tabpanel" aria-labelledby="tab-CS" tabindex="0">
@@ -54,7 +55,7 @@
           <section class="timer-card card" aria-label="Таймер и запуск">
             <div class="card-top"><span class="eyebrow" id="timer-label">ТАЙМЕР РАУНДА</span><span class="state-badge" id="state-badge">Ожидание связи</span></div>
             <div class="timer" id="timer-value" role="timer" aria-live="off">--:--</div>
-            <p id="timer-note" class="timer-note">Подключись, чтобы получить параметры раунда.</p>
+            <p id="timer-note" class="timer-note">Для получения параметров раунда необходимо подключить устройство.</p>
             <div class="timer-track"><span id="timer-progress"></span></div>
             <div class="start-controls"><label for="start-delay">Задержка старта <span>сек.</span></label><div class="delay-input"><button id="delay-minus" class="step-button" aria-label="Уменьшить задержку на 5 секунд">−</button><input id="start-delay" inputmode="numeric" pattern="[0-9]*" type="text" value="10" maxlength="4" aria-label="Задержка старта в секундах"><button id="delay-plus" class="step-button" aria-label="Увеличить задержку на 5 секунд">+</button></div></div>
             <button id="start" class="button start-button" disabled><svg><use href="#i-play"/></svg><span>Начать раунд</span><span class="button-end" aria-hidden="true">↗</span></button>
@@ -63,23 +64,22 @@
 
           <section class="card score-card" id="score-section" hidden><div class="card-top"><h3>Счёт команд</h3><span class="muted" id="score-unit">Время удержания</span></div><p id="winner" class="winner" hidden></p><div id="team-scores" class="team-scores"></div><div id="point-state" class="point-state" hidden><div><span id="point-owner"></span><strong id="point-progress-label"></strong></div><div class="point-track"><span id="point-progress"></span></div></div><p id="codes-used" class="codes-used" hidden></p></section>
 
-          <section class="card cs-state" id="cs-section"><div class="card-top"><h3>Состояние устройства</h3><svg><use href="#i-target"/></svg></div><div class="cs-status"><span id="cs-state-name">Ожидание подключения</span><span id="cs-code">•••••••</span></div><p class="muted" id="cs-state-note">Запуск, настройки и сброс доступны после подключения.</p></section>
+          <section class="card cs-state" id="cs-section"><div class="card-top"><h3>Состояние устройства</h3><svg><use href="#i-target"/></svg></div><div class="cs-status"><span id="cs-state-name">Ожидание подключения</span><span id="cs-code">•••••••</span></div></section>
         </div>
 
         <aside class="secondary-column">
           <section class="card settings-card"><div class="card-top"><h3>Параметры игры</h3><svg><use href="#i-settings"/></svg></div><dl id="settings-summary" class="settings-summary"></dl><button id="settings" class="button secondary full" disabled><svg><use href="#i-settings"/></svg><span>Настроить</span><span class="push-right">↗</span></button><p id="settings-lock" class="subnote">Настройки появятся после подключения.</p></section>
           <section class="card volume-card"><div class="card-top"><h3><svg><use href="#i-volume"/></svg>Громкость динамика</h3><output for="volume" id="volume-value">—</output></div><input type="range" min="0" max="30" value="20" id="volume" aria-label="Громкость динамика" disabled><div class="volume-bottom"><span>0</span><button id="save-volume" class="text-button" disabled>Применить</button><span>30</span></div></section>
           <details class="card code-details" id="device-codes" hidden><summary>Коды на устройстве <span id="device-code-count"></span></summary><div id="device-code-list"></div></details>
-          <details class="card help-card" id="help"><summary>Как подключиться <span>+</span></summary><ol><li>На iPhone открой панель в <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank" rel="noopener">Bluefy</a>. На Android — в Chrome.</li><li>Включи Bluetooth и питание игрового устройства.</li><li>Отключи модуль от Android-приложения или Bluetooth-терминала.</li><li>Нажми «Подключиться», разреши Bluetooth и выбери свой BLE-модуль.</li></ol><p>Держи панель открытой для обновления счёта. Устройство продолжает игру самостоятельно, если телефон отключится.</p></details>
         </aside>
       </div>
     </main>
 
-    <details class="log-card" id="log-details"><summary><span><span class="terminal-icon" aria-hidden="true">›_</span> Журнал связи</span><span id="last-sync">Ещё не подключались</span></summary><div class="log-toolbar"><span>Последние 1 000 строк</span><div><button class="text-button" id="copy-log">Копировать</button><button class="text-button" id="clear-log">Очистить</button></div></div><pre id="log-content" tabindex="0">Здесь появятся команды и ответы устройства.</pre></details>
+    <details class="log-card" id="log-details"><summary><span><span class="terminal-icon" aria-hidden="true">›_</span> Журнал связи</span><span id="last-sync">Подключение не установлено</span></summary><div class="log-toolbar"><span>Последние 1 000 строк</span><div><button class="text-button" id="copy-log">Копировать</button><button class="text-button" id="clear-log">Очистить</button></div></div><pre id="log-content" tabindex="0">Здесь появятся команды и ответы устройства.</pre></details>
     <footer><span>RICOSHET <span class="footer-divider">/</span> FIELD CONTROL</span><span>WEB v1.0 <span class="footer-divider">·</span> BLE UART</span></footer>
   </div>
 
-  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form" novalidate><div class="dialog-header"><div><p class="eyebrow" id="settings-mode">НАСТРОЙКИ CS</p><h2 id="settings-title">Параметры игры</h2></div><button type="button" id="close-settings" class="icon-button" aria-label="Закрыть настройки"><svg><use href="#i-cross"/></svg></button></div><div class="dialog-content"><div id="draft-notice" class="draft-notice" hidden><span>Восстановлен несохранённый черновик.</span><button type="button" class="text-button" id="reload-draft">Взять с устройства</button></div><fieldset id="settings-fields"><div id="settings-inputs" class="form-grid"></div><div id="code-editor" hidden><label class="switch-row"><span>Повторное использование кодов</span><input type="checkbox" id="reuse-codes" role="switch"><span class="switch-track"></span></label><div class="editor-title"><h3>Список кодов</h3><span id="code-count">0 / 32</span></div><p class="subnote">Код: 3–7 цифр. Стоимость: 1–9999 баллов.</p><div id="code-entries"></div><button type="button" id="add-code" class="button secondary full">+ Добавить код</button></div></fieldset><p id="form-error" class="form-error" role="alert" hidden></p></div><div class="dialog-footer"><span id="save-progress">Изменения сохранятся на устройстве</span><button type="submit" id="save-settings" class="button light full">Сохранить настройки <svg><use href="#i-arrow"/></svg></button></div></form></dialog>
-  <noscript><p class="noscript">Для работы пульта включи JavaScript в браузере.</p></noscript>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a55d175b1d9fa866',t:'MTc5Mzg5NDYzNA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a55d175b1d9fa866',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form" novalidate><div class="dialog-header"><div><p class="eyebrow" id="settings-mode">НАСТРОЙКИ CS</p><h2 id="settings-title">Параметры игры</h2></div><button type="button" id="close-settings" class="icon-button" aria-label="Закрыть настройки"><svg><use href="#i-cross"/></svg></button></div><div class="dialog-content"><div id="draft-notice" class="draft-notice" hidden><span>Восстановлен несохранённый черновик.</span><button type="button" class="text-button" id="reload-draft">Взять с устройства</button></div><fieldset id="settings-fields"><div id="settings-inputs" class="form-grid"></div><div id="code-editor" hidden><label class="switch-row"><span>Повторное использование кодов</span><input type="checkbox" id="reuse-codes" role="switch"><span class="switch-track"></span></label><div class="editor-title"><h3>Список кодов</h3><span id="code-count">0 / 32</span></div><p class="subnote">Код: 3–7 цифр. Стоимость: 1–9999 баллов.</p><div id="code-entries"></div><button type="button" id="add-code" class="button secondary full">+ Добавить код</button></div></fieldset><p id="form-error" class="form-error" role="alert" hidden></p></div><div class="dialog-footer"><span id="save-progress"></span><button type="submit" id="save-settings" class="button light full">Сохранить настройки <svg><use href="#i-arrow"/></svg></button></div></form></dialog>
+  <noscript><p class="noscript">Для работы пульта необходимо включить JavaScript в браузере.</p></noscript>
+</body>
 </html>

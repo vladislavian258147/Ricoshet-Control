@@ -1,7 +1,7 @@
-import { BluetoothClient } from './bluetooth.mjs';
-import { RoundClock } from './clock.mjs';
-import { createDemoBluetooth } from './demo.mjs';
-import { MODES, TEAM_NAMES, STATE_NAMES, FINISHED, formatClock, settingsDraft, settingsCommands, verifySettings, integer, humanError, durationOf, validateSnapshot } from './protocol.mjs';
+import { BluetoothClient } from './bluetooth.mjs?v=20261105-ui';
+import { RoundClock } from './clock.mjs?v=20261105-ui';
+import { createDemoBluetooth } from './demo.mjs?v=20261105-ui';
+import { MODES, TEAM_NAMES, STATE_NAMES, FINISHED, formatClock, settingsDraft, settingsCommands, verifySettings, integer, humanError, durationOf, validateSnapshot } from './protocol.mjs?v=20261105-ui';
 
 const $ = id => document.getElementById(id);
 const storage = {
@@ -57,8 +57,8 @@ const client = new BluetoothClient({
     const pill = $('connection-pill');
     pill.className = `connection-pill ${kind === 'connected' ? 'online' : kind === 'connecting' ? 'connecting' : ''}`;
     pill.lastElementChild.textContent = kind === 'connected' ? (isDemo ? 'Демо' : 'На связи') : kind === 'connecting' ? 'Подключение' : 'Нет связи';
-    $('device-name').textContent = kind === 'connecting' ? message : kind === 'connected' ? message : 'Подключи устройство';
-    $('connection-description').textContent = kind === 'connecting' ? 'Разреши доступ к Bluetooth в браузере.' : kind === 'connected' ? 'Получаем полный статус устройства…' : 'Выбери BLE-модуль и получи настройки игры.';
+    $('device-name').textContent = kind === 'connecting' ? message : kind === 'connected' ? message : 'Подключение устройства';
+    $('connection-description').textContent = kind === 'connecting' ? 'Необходимо разрешить доступ к Bluetooth в браузере.' : kind === 'connected' ? 'Получение полного статуса устройства…' : 'Для получения настроек необходимо подключить BLE-модуль.';
     if (kind === 'disconnected' && message !== 'Отключено' && !client.connecting) notify(humanError(new Error(message)), 'error');
     render();
   },
@@ -91,7 +91,7 @@ function renderControls() {
   $('settings').disabled = !canConfigure() || pending;
   const emptyCodes = selected === 'CODES' && !snapshot?.FINDCOUNT;
   $('start').disabled = !canConfigure() || pending || emptyCodes;
-  $('start').querySelector('span').textContent = startPending ? 'Отправляем старт…' : canControl() && snapshot.BUSY ? (snapshot.STARTIN ? 'Старт запланирован' : FINISHED.has(snapshot.STATE) ? 'Раунд завершён' : 'Раунд идёт') : emptyCodes && canControl() ? 'Сначала добавь коды' : 'Начать раунд';
+  $('start').querySelector('span').textContent = startPending ? 'Отправка команды старта…' : canControl() && snapshot.BUSY ? (snapshot.STARTIN ? 'Старт запланирован' : FINISHED.has(snapshot.STATE) ? 'Раунд завершён' : 'Раунд идёт') : emptyCodes && canControl() ? 'Необходимо добавить коды' : 'Начать раунд';
   for (const id of ['start-delay','delay-minus','delay-plus']) $(id).disabled = !canConfigure() || pending;
   $('volume').disabled = !connected || !loaded || saving;
   $('save-volume').disabled = !connected || !loaded || client.busy || saving || !volumeDirty;
@@ -118,7 +118,7 @@ function render() {
   $('active-mode').textContent = !snapshot ? 'Режим не получен' : `${sourceDemo ? 'Демо · ' : ''}${!loaded ? 'Последний: ' : selectedOnDevice ? 'На устройстве: ' : 'Устройство: '}${MODES[snapshot.MODE]}`;
   $('active-mode').classList.toggle('active', loaded && selectedOnDevice);
   $('mode-switch').hidden = !snapshot || selectedOnDevice;
-  $('mode-switch-text').textContent = loaded && snapshot?.BUSY ? 'Смена режима сбросит текущий раунд.' : 'Выбери этот режим, чтобы настроить и запустить игру.';
+  $('mode-switch-text').textContent = loaded && snapshot?.BUSY ? 'Смена режима сбросит текущий раунд.' : 'Для настройки и запуска игры необходимо выбрать этот режим.';
   $('select-mode').firstChild.textContent = loaded && snapshot?.BUSY ? 'Переключить и сбросить ' : 'Выбрать этот режим ';
   const s = viewSettings();
   const min = value => value == null ? '—' : `${Math.floor(value/60)} мин`;
@@ -130,11 +130,10 @@ function render() {
     : [['Команд', s?.FINDTEAMS ?? '—'], ['Раунд', min(s?.FINDROUND)], ['Кодов', s?.FINDCOUNT ?? '—'], ['Повтор кодов', !s ? '—' : s.FINDREUSE ? 'Разрешён' : 'Запрещён']];
   $('settings-summary').innerHTML = rows.map(([name,value,code]) => `<div><dt>${name}</dt><dd${code ? ' class="code-value"' : ''}>${escape(value)}</dd></div>`).join('');
   $('settings').querySelector('span').textContent = selected === 'CODES' ? 'Настройки и коды' : 'Настроить';
-  $('settings-lock').textContent = !snapshot ? 'Настройки появятся после подключения.' : !loaded ? 'Показаны последние полученные настройки.' : !selectedOnDevice ? 'Сначала выбери этот режим на устройстве.' : snapshot.BUSY ? 'Для изменения настроек сбрось раунд.' : 'Изменения сохраняются на устройстве.';
+  $('settings-lock').textContent = !snapshot ? 'Настройки появятся после подключения.' : !loaded ? 'Показаны последние полученные настройки.' : !selectedOnDevice ? 'Необходимо выбрать этот режим на устройстве.' : snapshot.BUSY ? 'Для изменения настроек необходимо сбросить раунд.' : '';
   $('cs-section').hidden = selected !== 'CS';
   $('cs-state-name').textContent = !snapshot ? 'Ожидание подключения' : selectedOnDevice ? STATE_NAMES[snapshot.STATE] : 'Режим CS не выбран';
   $('cs-code').textContent = s?.CODE ?? '•••••••';
-  $('cs-state-note').textContent = !loaded ? 'Состояние обновится после подключения.' : 'Ввод кода и обезвреживание — на игровом устройстве.';
   renderScores(); renderTimer(); renderControls(); renderLastSync();
 }
 
@@ -161,7 +160,7 @@ function renderScores() {
   $('codes-used').textContent = active ? `Разных кодов зачтено: ${snapshot.FINDUSED} из ${snapshot.FINDCOUNT}${!loaded ? ' · последние данные' : ''}` : 'Счёт появится после выбора режима на устройстве.';
   $('device-codes').hidden = selected !== 'CODES' || !s;
   $('device-code-count').textContent = s?.FINDCOUNT ?? 0;
-  $('device-code-list').innerHTML = !s?.codes?.length ? '<p class="subnote" style="margin-top:15px">Список пуст. Добавь коды в настройках.</p>' : s.codes.map(c => `<div class="device-code"><span>${escape(c.code)}</span><span>${c.points} балл.</span><span aria-label="${c.used ? 'Зачтён' : 'Не зачтён'}">${c.used ? '✓' : '·'}</span></div>`).join('');
+  $('device-code-list').innerHTML = !s?.codes?.length ? '<p class="subnote" style="margin-top:15px">Список кодов пуст. Коды добавляются в настройках.</p>' : s.codes.map(c => `<div class="device-code"><span>${escape(c.code)}</span><span>${c.points} балл.</span><span aria-label="${c.used ? 'Зачтён' : 'Не зачтён'}">${c.used ? '✓' : '·'}</span></div>`).join('');
 }
 
 function renderTimer() {
@@ -170,20 +169,20 @@ function renderTimer() {
   const done = active && FINISHED.has(s.STATE);
   let seconds = null, label = 'ТАЙМЕР РАУНДА', state = !loaded ? 'Ожидание связи' : active ? STATE_NAMES[s.STATE] : 'Другой режим', note = '';
   let style = '';
-  if (done) { seconds=0; note='Результат получен с устройства. Для новой игры сбрось раунд.'; }
+  if (done) { seconds=0; note='Результат получен с устройства. Для нового раунда необходимо выполнить сброс.'; }
   else if (local && active) {
     seconds=local.seconds;
     label=local.phase === 'delay' ? 'ДО НАЧАЛА РАУНДА' : 'ТАЙМЕР РАУНДА';
     style=local.phase === 'delay' ? 'delay' : 'running';
     state=local.phase === 'delay' ? 'Обратный отсчёт' : s.STATE === 'READY' ? 'Раунд идёт' : STATE_NAMES[s.STATE];
-    note=!client.connected || !loaded ? 'Нет связи · локальный отсчёт телефона' : !local.confirmed ? 'Старт отправлен · ожидаем подтверждение' : selected === 'CS' ? 'Таймер телефона · состояние установки — ниже' : 'Таймер телефона · счёт обновляется с устройства';
+    note=!client.connected || !loaded ? 'Нет связи · локальный отсчёт телефона' : !local.confirmed ? 'Старт отправлен · ожидание подтверждения' : selected === 'CS' ? 'Таймер телефона · состояние установки — ниже' : 'Таймер телефона · счёт обновляется с устройства';
   } else if (s && active && s.BUSY) {
     if (selected !== 'CS') seconds=s.REMAIN;
     note=selected === 'CS' ? 'Раунд уже идёт. Точное время старта неизвестно этому телефону.' : 'Последнее время, полученное с устройства.';
   } else {
     const settings=viewSettings();
     seconds=settings ? (selected === 'CS' ? settings.ROUND : selected === 'DOM' ? settings.DOMROUND : settings.FINDROUND) : null;
-    note=!snapshot ? 'Подключись, чтобы получить параметры раунда.' : !active ? 'Сначала выбери этот режим на устройстве.' : !loaded ? 'Последние параметры · устройство не подключено' : 'Готов к запуску. Укажи задержку и начинай игру.';
+    note=!snapshot ? 'Для получения параметров раунда необходимо подключить устройство.' : !active ? 'Необходимо выбрать этот режим на устройстве.' : !loaded ? 'Последние параметры · устройство не подключено' : 'Устройство готово к запуску.';
   }
   $('timer-value').textContent=seconds == null ? '--:--' : formatClock(seconds);
   $('timer-value').className=`timer ${style}`;
@@ -195,14 +194,14 @@ function renderTimer() {
 }
 
 function renderLastSync() {
-  $('last-sync').textContent=!lastSync ? 'Ещё не подключались' : `${sourceDemo ? 'Демо · ' : ''}${!loaded ? 'Последнее: ' : 'Обновлено: '}${new Date(lastSync).toLocaleTimeString('ru-RU',{ hour12:false })}`;
+  $('last-sync').textContent=!lastSync ? 'Подключение не установлено' : `${sourceDemo ? 'Демо · ' : ''}${!loaded ? 'Последнее: ' : 'Обновлено: '}${new Date(lastSync).toLocaleTimeString('ru-RU',{ hour12:false })}`;
 }
 
 async function connect(demo = false) {
   $('notice').hidden=true; isDemo=demo; loaded=false; volumeDirty=false; searchSnapshot=null;
   try {
     await client.connect(demo ? createDemoBluetooth() : undefined);
-    if (demo) notify('Демо подключено. Можно настроить и запустить виртуальную игру.', 'success');
+    if (demo) notify('Демонстрационный режим подключён.', 'success');
   } catch (error) { notify(humanError(error), 'error'); }
   render();
 }
@@ -273,7 +272,7 @@ function renderForm() {
   $('code-editor').hidden=draftMode !== 'CODES';
   if (draftMode === 'CODES') { $('reuse-codes').checked=draft.reuse; renderCodeEditor(); }
   $('form-error').hidden=true;
-  $('save-progress').textContent='Изменения сохранятся на устройстве';
+  $('save-progress').textContent='';
 }
 function renderCodeEditor() {
   $('code-count').textContent=`${draft.codes.length} / 32`;
@@ -345,12 +344,11 @@ async function copy(text, success) {
     notify(success,'success');
   } catch { notify('Не удалось скопировать. Можно выделить текст вручную.', 'error'); }
 }
-$('copy-link').addEventListener('click', () => copy(location.origin+location.pathname,'Ссылка скопирована. Открой её в Bluefy.'));
+$('copy-link').addEventListener('click', () => copy(location.origin+location.pathname,'Ссылка скопирована. На iPhone для подключения необходимо использовать Bluefy.'));
 $('copy-log').addEventListener('click', () => copy(logs.join('\n'),'Журнал скопирован.'));
 $('clear-log').addEventListener('click', () => { logs.length=0; renderLog(); });
 $('log-details').addEventListener('toggle', () => { if ($('log-details').open) renderLog(); });
 $('compatibility').hidden=!!navigator.bluetooth;
-if (!navigator.bluetooth) $('help').open=true;
 
 async function poll() {
   if (!client.connected || client.busy || saving || startPending || document.visibilityState === 'hidden') return;

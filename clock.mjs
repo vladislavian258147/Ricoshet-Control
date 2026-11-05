@@ -1,7 +1,7 @@
-import { durationOf, FINISHED } from './protocol.mjs';
+import { durationOf, FINISHED } from './protocol.mjs?v=20261105-ui';
 
-// Absolute deadlines survive a suspended browser tab and page reloads.
-// They are estimates on the phone; STATE and scores always come from the prop.
+// Абсолютные сроки сохраняют отсчёт при сворачивании вкладки и перезагрузке страницы.
+// Время оценивается на телефоне; STATE и результаты всегда поступают с устройства.
 export class RoundClock {
   constructor(storage, now = () => Date.now()) { this.storage = storage; this.now = now; this.device = ''; this.value = null; }
   select(device) {
@@ -24,9 +24,9 @@ export class RoundClock {
     if (this.value) {
       const now=this.now();
       const active=s.STATE === 'DOM_ACTIVE' || s.STATE === 'FIND_ACTIVE';
-      // No round id is available. A large disagreement can mean another phone
-      // reset/started the prop while we were away; small STATUS delays never
-      // shift a running local clock.
+      // Идентификатор раунда не передаётся. Большое расхождение может означать сброс
+      // или новый запуск с другого телефона. Небольшая задержка STATUS не сдвигает
+      // текущий локальный отсчёт.
       const changedDelay=s.STARTIN > 0 && Math.abs((this.value.start-now)/1000-s.STARTIN)>5;
       const changedRound=active && !s.STARTIN && Math.abs(Math.max(0,(this.value.end-now)/1000)-s.REMAIN)>5;
       if (changedDelay || changedRound) this.clear();

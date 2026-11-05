@@ -1,4 +1,4 @@
-import { LineDecoder, StatusCollector } from './protocol.mjs';
+import { LineDecoder, StatusCollector } from './protocol.mjs?v=20261105-ui';
 
 export const UUID = {
   service: '0000ffe0-0000-1000-8000-00805f9b34fb',
@@ -20,13 +20,13 @@ export class BluetoothClient {
   state(kind, message) { this.cb.onState?.(kind, message); }
 
   async connect(bluetooth = globalThis.navigator?.bluetooth) {
-    if (!bluetooth?.requestDevice) throw new Error('В этом браузере нет Bluetooth. На iPhone открой ссылку в Bluefy.');
+    if (!bluetooth?.requestDevice) throw new Error('Браузер не поддерживает Web Bluetooth. На iPhone необходимо использовать Bluefy.');
     if (this.connected || this.connecting) throw new Error('Подключение уже открыто');
     this.connecting = true;
     const epoch = ++this.epoch;
-    this.state('connecting', 'Выбери BLE-модуль');
+    this.state('connecting', 'Необходимо выбрать BLE-модуль');
     try {
-      // This call must remain directly inside the user's click gesture.
+      // Запрос устройства выполняется непосредственно из обработчика нажатия.
       const device = await bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: [UUID.service] });
       this.checkEpoch(epoch);
       this.device = device;
@@ -89,7 +89,7 @@ export class BluetoothClient {
   }
 
   enqueue(task) {
-    if (!this.connected) return Promise.reject(new Error('Сначала подключись к устройству'));
+    if (!this.connected) return Promise.reject(new Error('Необходимо подключить устройство'));
     const epoch = this.epoch;
     this.queued++; this.cb.onBusy?.(true);
     const result = this.tail.then(async () => { this.checkEpoch(epoch); return task(epoch); });
@@ -123,7 +123,7 @@ export class BluetoothClient {
     throw error;
   }
 
-  /** Keep batches indivisible: no polling between FINDCFG, FC and FINDCOMMIT. */
+  /** Пакет настроек выполняется целиком, без опросов между FINDCFG, FC и FINDCOMMIT. */
   batch(commands, { refresh = true, transaction = false, onProgress, onTransmitted } = {}) {
     if (!Array.isArray(commands) || commands.some(c => typeof c !== 'string' || !c || /[\r\n]/.test(c) || c.length > 37)) {
       return Promise.reject(new Error('Некорректная команда Bluetooth'));
@@ -161,9 +161,9 @@ export class BluetoothClient {
       this.pending = pending;
       pending.timer = setTimeout(() => {
         const error = new Error(pending.lastError || `Нет ответа на ${command.split(' ')[0]}`);
-        // A lost ACK has an unknown outcome. Never replay a mutating command.
+        // При потере ACK результат команды неизвестен; изменяющая команда не повторяется.
         error.fatal = command !== 'STATUS' || !pending.writeDone;
-        if (error.fatal) error.message += '. Результат команды неизвестен; подключись заново и обнови состояние.';
+        if (error.fatal) error.message += '. Результат команды неизвестен. Необходимо повторно подключиться и обновить состояние.';
         this.finish(pending, error);
         if (error.fatal && epoch === this.epoch) this.disconnect(error.message);
       }, command === 'STATUS' ? this.statusTimeout : this.commandTimeout);
@@ -213,7 +213,7 @@ export class BluetoothClient {
       else if (line !== expected) return;
       p.reply = line; p.replyDone = true;
     }
-    // Firmware responses can arrive before the ATT write promise resolves.
+    // Ответ прошивки может поступить до завершения ATT-записи.
     if (p.writeDone) this.finish(p, p.error, p.reply);
   }
 }

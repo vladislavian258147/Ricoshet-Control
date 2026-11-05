@@ -61,7 +61,7 @@ export function validateSnapshot(values) {
   return v;
 }
 
-/** One complete firmware snapshot; never expose partially parsed settings. */
+/** Полный снимок настроек; частично полученные значения не передаются в интерфейс. */
 export class StatusCollector {
   constructor() { this.clear(); }
   clear() { this.values = {}; this.invalid = ''; }
@@ -73,7 +73,7 @@ export class StatusCollector {
     if (key === 'MODE') this.clear();
     if (!('MODE' in this.values) && key !== 'MODE') return null;
     if (key === 'ROUNDTIME' || key === 'REUSE') {
-      this.invalid = 'Прошивка отправляет старые имена STATUS. Нужен исправленный скетч с ROUND, DOMROUND и FINDROUND.';
+      this.invalid = 'Прошивка отправляет устаревшие имена STATUS. Необходима версия с полями ROUND, DOMROUND и FINDROUND.';
     }
     if (!KNOWN.has(key) && !/^FINDCODE(?:[1-9]|[12][0-9]|3[0-2])$/.test(key)) return null;
     if (key in this.values) this.invalid ||= `Повтор поля ${key} в STATUS`;
@@ -84,7 +84,7 @@ export class StatusCollector {
   }
 }
 
-/** Notifications may split a line, or contain many CR/LF-delimited lines. */
+/** Уведомления могут содержать части строк или несколько строк с разделителями CR/LF. */
 export class LineDecoder {
   constructor() { this.decoder = new TextDecoder(); this.buffer = ''; }
   push(bytes) {
@@ -142,7 +142,7 @@ export function verifySettings(mode, draft, snapshot) {
       Boolean(snapshot.FINDREUSE) === Boolean(draft.reuse) && snapshot.codes.length === draft.codes.length &&
       snapshot.codes.every((c,i) => c.code === draft.codes[i].code && c.points === Number(draft.codes[i].points));
   } else equal = settingsCommands(mode,draft,snapshot).length === 0;
-  if (!equal) throw new Error('Устройство вернуло другие настройки. Обнови статус и проверь значения.');
+  if (!equal) throw new Error('Устройство вернуло другие настройки. Необходимо обновить статус и проверить значения.');
 }
 export function formatClock(seconds) {
   const n = Math.max(0, Math.ceil(seconds || 0));
@@ -151,10 +151,10 @@ export function formatClock(seconds) {
 
 export function humanError(error) {
   const text = error?.message ?? String(error);
-  const errors = { 'ERR BUSY': 'Раунд уже идёт. Сначала сбрось игру.', 'ERR MODE': 'Сначала выбери этот режим на устройстве.', 'ERR EMPTY': 'Добавь хотя бы один код.', 'ERR CODE': 'Устройство отклонило код.', 'ERR VALUE': 'Устройство отклонило значение.', 'ERR INCOMPLETE': 'Устройство получило не весь список кодов.', 'ERR CONFIG': 'Передача списка кодов прервана.', 'ERR COMMAND': 'Прошивка не распознала команду.' };
+  const errors = { 'ERR BUSY': 'Раунд уже идёт. Для продолжения необходимо сбросить раунд.', 'ERR MODE': 'Необходимо выбрать этот режим на устройстве.', 'ERR EMPTY': 'Необходимо добавить хотя бы один код.', 'ERR CODE': 'Устройство отклонило код.', 'ERR VALUE': 'Устройство отклонило значение.', 'ERR INCOMPLETE': 'Устройство получило не весь список кодов.', 'ERR CONFIG': 'Передача списка кодов прервана.', 'ERR COMMAND': 'Прошивка не распознала команду.' };
   if (errors[text]) return errors[text];
   if (error?.name === 'NotFoundError') return 'Устройство не выбрано. Можно подключиться ещё раз.';
-  if (error?.name === 'NetworkError') return 'Связь Bluetooth прервана. Подключись ещё раз.';
-  if (error?.name === 'SecurityError' || error?.name === 'NotAllowedError') return 'Браузер не разрешил Bluetooth. Открой панель в Bluefy и разреши подключение.';
+  if (error?.name === 'NetworkError') return 'Связь Bluetooth прервана. Необходимо повторное подключение.';
+  if (error?.name === 'SecurityError' || error?.name === 'NotAllowedError') return 'Браузер не разрешил Bluetooth. Необходимо открыть панель в Bluefy и разрешить подключение.';
   return text;
 }
