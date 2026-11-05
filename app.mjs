@@ -175,7 +175,7 @@ function renderTimer() {
     label=local.phase === 'delay' ? 'ДО НАЧАЛА РАУНДА' : 'ТАЙМЕР РАУНДА';
     style=local.phase === 'delay' ? 'delay' : 'running';
     state=local.phase === 'delay' ? 'Обратный отсчёт' : s.STATE === 'READY' ? 'Раунд идёт' : STATE_NAMES[s.STATE];
-    note=!client.connected || !loaded ? 'Нет связи · локальный отсчёт телефона' : !local.confirmed ? 'Старт отправлен · ожидание подтверждения' : selected === 'CS' ? 'Таймер телефона · состояние установки — ниже' : 'Таймер телефона · счёт обновляется с устройства';
+    note=!client.connected || !loaded ? 'Нет связи · локальный отсчёт телефона' : !local.confirmed ? 'Старт отправлен · ожидание подтверждения' : selected === 'CS' ? 'Локальный таймер' : 'Таймер с устройства';
   } else if (s && active && s.BUSY) {
     if (selected !== 'CS') seconds=s.REMAIN;
     note=selected === 'CS' ? 'Раунд уже идёт. Точное время старта неизвестно этому телефону.' : 'Последнее время, полученное с устройства.';
